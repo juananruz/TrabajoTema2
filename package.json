@@ -1,0 +1,32 @@
+{
+    "name": "api-gestion-deportiva",
+    "version": "1.1.0",
+    "description": "API REST de deportes y usuarios desarrollada por Juan Antonio",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon --env-file=.env index.js"
+    },
+    "keywords": [
+        "deportes",
+        "api",
+        "express",
+        "mongodb"
+    ],
+    "author": "Juan Antonio",
+    "license": "ISC",
+    "devDependencies": {
+        "nodemon": "^3.1.14"
+    },
+    "dependencies": {
+        "bcryptjs": "^3.0.3",
+        "cors": "^2.8.5",
+        "express": "^4.22.3",
+        "express-async-errors": "^3.1.1",
+        "express-rate-limit": "^8.7.1",
+        "jsonwebtoken": "^9.0.3",
+        "mongodb": "^6.21.0",
+        "swagger-ui-express": "^5.0.1"
+    }
+}
