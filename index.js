@@ -1,4 +1,3 @@
-// Servidor de gestión deportiva implementado por Juan Antonio
 import express from "express";
 import cors from "cors";
 import bcrypt from "bcryptjs";
@@ -54,7 +53,6 @@ app.get("/", (req, res) => {
     res.redirect("/api-docs");
 });
 
-// -------------- SECCIÓN: DEPORTES (CAMBIADO DE ORDEN) ------------------
 
 app.get('/api/deportes', async (req, res) => {
     const db = client.db(DB_NAME);
@@ -102,7 +100,6 @@ app.delete('/api/deportes/:id', validarTokenJWT, async (req, res) => {
     res.status(200).json(resultado);
 });
 
-// -------------- SECCIÓN: USUARIOS ------------------
 
 app.get('/api/users', async (req, res) => {
     const db = client.db(DB_NAME);
@@ -147,8 +144,6 @@ app.delete('/api/users/:id', validarTokenJWT, async (req, res) => {
     const resultado = await col.deleteOne({ _id: new ObjectId(id) });
     res.status(200).json(resultado);
 });
-
-// -------------- SECCIÓN: AUTENTICACIÓN ------------------
 
 app.post('/api/register', loginLimiter, async (req, res) => {
     if (!req.is('json')) return res.status(400).json({ message: 'El formato debe ser JSON' });
@@ -208,7 +203,6 @@ app.post('/api/logout', async (req, res) => {
     res.json({ message: "Sesión cerrada correctamente" });
 });
 
-// Manejador de errores global
 app.use((err, req, res, next) => {
     console.error(err);
     if (err.name === 'BSONError') return res.status(400).json({ message: "ID con formato incorrecto" });
