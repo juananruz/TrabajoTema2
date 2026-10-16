@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
+import rateLimit from "express-rate-limit";
 import fs from "fs";
 
 const swaggerDocument = JSON.parse(fs.readFileSync(new URL("./openapi.json", import.meta.url)));
@@ -12,6 +13,12 @@ const SECRET_KEY = process.env.JWT_SECRET || "secreto";
 const REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET || "refresh_secreto";
 const app = express();
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100
+});
+
+app.use(limiter);
 app.use(express.json());
 app.use(cors());
 app.use(
@@ -22,9 +29,7 @@ app.use(
 
 const MONGO_URI = process.env.MONGODB_URI;
 
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("Conectado a MongoDB Atlas"))
-    .catch(err => console.error("Error al conectar a MongoDB:", err));
+mongoose.connect(MONGO_URI);
 
 const userSchema = new mongoose.Schema({
     nombre: { type: String, required: true, unique: true },
@@ -54,58 +59,65 @@ function verifyToken(request, response, next) {
 
 app.get("/", (request, response) => response.redirect("/api-docs"));
 
-app.post('/api/register', async (request, response) => {
+app.post('/api/register', (request, response) => {
     if (!request.is('json'))
         return response.json({ message: 'Debes proporcionar datos JSON' });
 
     const { nombre, password } = request.body;
-    try {
-        const existingUser = await User.findOne({ nombre });
-        if (existingUser) {
-            return response.json({ message: "El usuario ya existe" });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ nombre, password: hashedPassword });
-        response.json({ message: "Usuario registrado con éxito", id: newUser._id });
-    } catch (error) {
-        response.status(500).json({ message: "Error en el servidor", error: error.message });
-    }
+
+    User.findOne({ nombre })
+        .then(existingUser => {
+            if (existingUser) {
+                return response.json({ message: "El usuario ya existe" });
+            }
+            bcrypt.hash(password, 10)
+                .then(hashedPassword => {
+                    User.create({ nombre, password: hashedPassword })
+                        .then(newUser => {
+                            response.json({ message: "Usuario registrado con éxito", id: newUser._id });
+                        })
+                        .catch(error => response.status(500).json({ message: "Error al crear usuario", error: error.message }));
+                })
+                .catch(error => response.status(500).json({ message: "Error al cifrar contraseña", error: error.message }));
+        })
+        .catch(error => response.status(500).json({ message: "Error en el servidor", error: error.message }));
 });
 
-app.post('/api/login', async (request, response) => {
+app.post('/api/login', (request, response) => {
     if (!request.is('json'))
         return response.json({ message: 'Debes proporcionar datos JSON' });
 
     const { nombre, password } = request.body;
-    try {
-        const user = await User.findOne({ nombre });
 
-        if (!user) {
-            return response.json({ message: "Usuario no encontrado" });
-        }
+    User.findOne({ nombre })
+        .then(user => {
+            if (!user) {
+                return response.json({ message: "Usuario no encontrado" });
+            }
 
-        const correctPassword = await bcrypt.compare(password, user.password);
+            bcrypt.compare(password, user.password)
+                .then(correctPassword => {
+                    if (!correctPassword) {
+                        return response.json({ message: "Contraseña incorrecta" });
+                    }
 
-        if (!correctPassword) {
-            return response.json({ message: "Contraseña incorrecta" });
-        }
+                    const accessToken = jwt.sign(
+                        { id: user._id, nombre: user.nombre },
+                        SECRET_KEY,
+                        { expiresIn: '5m' }
+                    );
 
-        const accessToken = jwt.sign(
-            { id: user._id, nombre: user.nombre },
-            SECRET_KEY,
-            { expiresIn: '5m' }
-        );
+                    const refreshToken = jwt.sign(
+                        { id: user._id, nombre: user.nombre },
+                        REFRESH_SECRET_KEY,
+                        { expiresIn: '7d' }
+                    );
 
-        const refreshToken = jwt.sign(
-            { id: user._id, nombre: user.nombre },
-            REFRESH_SECRET_KEY,
-            { expiresIn: '7d' }
-        );
-
-        response.json({ accessToken, refreshToken });
-    } catch (error) {
-        response.status(500).json({ message: "Error en el servidor", error: error.message });
-    }
+                    response.json({ accessToken, refreshToken });
+                })
+                .catch(error => response.status(500).json({ message: "Error al comparar contraseñas", error: error.message }));
+        })
+        .catch(error => response.status(500).json({ message: "Error en el servidor", error: error.message }));
 });
 
 app.post('/api/refresh', (request, response) => {
@@ -129,88 +141,83 @@ app.post('/api/logout', (request, response) => {
     response.json({ message: "Sesión cerrada correctamente" });
 });
 
-app.get('/api/deportes', async (request, response) => {
-    try {
-        const deportes = await Deporte.find({}, { _id: 0, __v: 0 });
-        response.json(deportes);
-    } catch (error) {
-        response.status(500).json({ message: "Error al obtener los deportes" });
-    }
+app.get('/api/deportes', (request, response) => {
+    Deporte.find({}, { _id: 0, __v: 0 })
+        .then(deportes => response.json(deportes))
+        .catch(() => response.status(500).json({ message: "Error al obtener los deportes" }));
 });
 
-app.get('/api/deportes/:id', async (request, response) => {
-    try {
-        const dep = await Deporte.findOne({ id: request.params.id }, { _id: 0, __v: 0 });
-
-        if (dep) {
-            return response.json(dep);
-        } else {
-            response.json({ message: 'El elemento no ha sido encontrado' });
-        }
-    } catch (error) {
-        response.status(500).json({ message: "Error en la búsqueda" });
-    }
+app.get('/api/deportes/:id', (request, response) => {
+    Deporte.findOne({ id: request.params.id }, { _id: 0, __v: 0 })
+        .then(dep => {
+            if (dep) {
+                return response.json(dep);
+            } else {
+                response.json({ message: 'El elemento no ha sido encontrado' });
+            }
+        })
+        .catch(() => response.status(500).json({ message: "Error en la búsqueda" }));
 });
 
-app.post('/api/deportes', verifyToken, async (request, response) => {
+app.post('/api/deportes', verifyToken, (request, response) => {
     if (!request.is('json'))
         return response.json({ message: 'Debes proporcionar datos JSON' });
 
-    try {
-        const lastDep = await Deporte.findOne().sort({ id: -1 });
-        let sig = lastDep ? lastDep.id + 1 : 0;
+    Deporte.findOne().sort({ id: -1 })
+        .then(lastDep => {
+            let sig = lastDep ? lastDep.id + 1 : 0;
+            const { nombre, caloriasHora } = request.body;
 
-        const { nombre, caloriasHora } = request.body;
-        await Deporte.create({ id: sig, nombre, caloriasHora });
-
-        const deportes = await Deporte.find({}, { _id: 0, __v: 0 });
-        return response.json(deportes);
-    } catch (error) {
-        response.status(500).json({ message: "Error al crear el deporte", error: error.message });
-    }
+            Deporte.create({ id: sig, nombre, caloriasHora })
+                .then(() => {
+                    Deporte.find({}, { _id: 0, __v: 0 })
+                        .then(deportes => response.json(deportes))
+                        .catch(() => response.status(500).json({ message: "Error al listar deportes" }));
+                })
+                .catch(error => response.status(500).json({ message: "Error al crear el deporte", error: error.message }));
+        })
+        .catch(error => response.status(500).json({ message: "Error al procesar la ID", error: error.message }));
 });
 
-app.put('/api/deportes/:id', verifyToken, async (request, response) => {
+app.put('/api/deportes/:id', verifyToken, (request, response) => {
     if (!request.is('json'))
         return response.json({ message: 'Debes proporcionar datos JSON' });
 
     const { id } = request.params;
     const { nombre, caloriasHora } = request.body;
 
-    try {
-        const updated = await Deporte.findOneAndUpdate(
-            { id: Number(id) },
-            { nombre, caloriasHora },
-            { new: true }
-        );
-
-        if (updated) {
-            const deportes = await Deporte.find({}, { _id: 0, __v: 0 });
-            return response.json(deportes);
-        } else {
-            response.json({ message: 'El elemento no ha sido encontrado' });
-        }
-    } catch (error) {
-        response.status(500).json({ message: "Error al actualizar" });
-    }
+    Deporte.findOneAndUpdate(
+        { id: Number(id) },
+        { nombre, caloriasHora },
+        { new: true }
+    )
+        .then(updated => {
+            if (updated) {
+                Deporte.find({}, { _id: 0, __v: 0 })
+                    .then(deportes => response.json(deportes))
+                    .catch(() => response.status(500).json({ message: "Error al listar deportes" }));
+            } else {
+                response.json({ message: 'El elemento no ha sido encontrado' });
+            }
+        })
+        .catch(() => response.status(500).json({ message: "Error al actualizar" }));
 });
 
-app.delete('/api/deportes/:id', verifyToken, async (request, response) => {
-    try {
-        const deleted = await Deporte.findOneAndDelete({ id: Number(request.params.id) });
-
-        if (deleted) {
-            const deportes = await Deporte.find({}, { _id: 0, __v: 0 });
-            return response.json(deportes);
-        } else {
-            response.json({ message: 'El elemento no ha sido encontrado' });
-        }
-    } catch (error) {
-        response.status(500).json({ message: "Error al eliminar" });
-    }
+app.delete('/api/deportes/:id', verifyToken, (request, response) => {
+    Deporte.findOneAndDelete({ id: Number(request.params.id) })
+        .then(deleted => {
+            if (deleted) {
+                Deporte.find({}, { _id: 0, __v: 0 })
+                    .then(deportes => response.json(deportes))
+                    .catch(() => response.status(500).json({ message: "Error al listar deportes" }));
+            } else {
+                response.json({ message: 'El elemento no ha sido encontrado' });
+            }
+        })
+        .catch(() => response.status(500).json({ message: "Error al eliminar" }));
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT);
 
 export default app;
