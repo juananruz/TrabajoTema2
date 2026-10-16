@@ -1,504 +1,9 @@
 {
-    "openapi": "3.0.3",
+    "openapi": "3.0.0",
     "info": {
-        "title": "API de Gestión Deportiva - Juan Antonio",
-        "version": "1.1.0",
-        "description": "API REST desarrollada por Juan Antonio para la administración de usuarios y actividades deportivas."
-    },
-    "servers": [
-        {
-            "url": "/"
-        }
-    ],
-    "tags": [
-        {
-            "name": "Deportes"
-        },
-        {
-            "name": "Users"
-        },
-        {
-            "name": "Auth"
-        }
-    ],
-    "paths": {
-        "/api/deportes": {
-            "get": {
-                "tags": [
-                    "Deportes"
-                ],
-                "summary": "Obtener catálogo de deportes",
-                "responses": {
-                    "200": {
-                        "description": "Lista de deportes obtenida correctamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Deporte"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Deportes"
-                ],
-                "summary": "Registrar un nuevo deporte",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeporteInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Deporte creado exitosamente"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        },
-        "/api/deportes/{id}": {
-            "get": {
-                "tags": [
-                    "Deportes"
-                ],
-                "summary": "Buscar deporte por ID",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "description": "Identificador único de MongoDB"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Deporte encontrado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Deporte"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Deportes"
-                ],
-                "summary": "Modificar datos de un deporte",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeporteInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Deporte actualizado"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Deportes"
-                ],
-                "summary": "Eliminar un deporte",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Deporte eliminado"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        },
-        "/api/users": {
-            "get": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Listar usuarios registrados",
-                "responses": {
-                    "200": {
-                        "description": "Lista de usuarios",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/User"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Crear usuario manualmente",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UserInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Usuario creado"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        },
-        "/api/users/{id}": {
-            "get": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Obtener usuario por ID",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Usuario encontrado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/User"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Actualizar usuario",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UserInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Actualizado"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Eliminar usuario",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Eliminado"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        },
-        "/api/register": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Registrar nuevo usuario en el sistema",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Usuario registrado exitosamente"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest"
-                    },
-                    "409": {
-                        "description": "El usuario ya existe"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        },
-        "/api/login": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Iniciar sesión y obtener tokens",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/LoginInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Tokens generados correctamente"
-                    },
-                    "401": {
-                        "description": "Credenciales inválidas"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        },
-        "/api/refresh": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Renovar token de acceso",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RefreshInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Token renovado"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/Forbidden"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        },
-        "/api/logout": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Cerrar sesión activa",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RefreshInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Sesión finalizada"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooMany"
-                    }
-                }
-            }
-        }
+        "title": "API Deportes JWT",
+        "description": "API REST de deportes y autenticación con Access y Refresh Token.",
+        "version": "1.0.0"
     },
     "components": {
         "securitySchemes": {
@@ -509,25 +14,16 @@
             }
         },
         "schemas": {
-            "Message": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string"
-                    }
-                }
-            },
-            "RegisterInput": {
+            "LoginRequest": {
                 "type": "object",
                 "properties": {
                     "nombre": {
-                        "type": "string"
-                    },
-                    "edad": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "Carlos"
                     },
                     "password": {
-                        "type": "string"
+                        "type": "string",
+                        "example": "jose"
                     }
                 },
                 "required": [
@@ -535,22 +31,22 @@
                     "password"
                 ]
             },
-            "LoginInput": {
+            "LoginResponse": {
                 "type": "object",
                 "properties": {
-                    "nombre": {
+                    "accessToken": {
                         "type": "string"
                     },
-                    "password": {
+                    "refreshToken": {
                         "type": "string"
                     }
                 },
                 "required": [
-                    "nombre",
-                    "password"
+                    "accessToken",
+                    "refreshToken"
                 ]
             },
-            "RefreshInput": {
+            "RefreshRequest": {
                 "type": "object",
                 "properties": {
                     "refreshToken": {
@@ -561,78 +57,376 @@
                     "refreshToken"
                 ]
             },
-            "User": {
-                "type": "object",
-                "properties": {
-                    "_id": {
-                        "type": "string"
-                    },
-                    "nombre": {
-                        "type": "string"
-                    },
-                    "edad": {
-                        "type": "number"
-                    }
-                }
-            },
-            "UserInput": {
-                "type": "object",
-                "properties": {
-                    "nombre": {
-                        "type": "string"
-                    },
-                    "edad": {
-                        "type": "number"
-                    }
-                },
-                "required": [
-                    "nombre"
-                ]
-            },
             "Deporte": {
                 "type": "object",
                 "properties": {
-                    "_id": {
-                        "type": "string"
+                    "id": {
+                        "type": "integer",
+                        "example": 0
                     },
                     "nombre": {
-                        "type": "string"
+                        "type": "string",
+                        "example": "Fútbol"
                     },
-                    "intensidad": {
-                        "type": "string"
-                    },
-                    "equipoRequerido": {
-                        "type": "boolean"
+                    "caloriasHora": {
+                        "type": "number",
+                        "example": 600
                     }
-                }
+                },
+                "required": [
+                    "id",
+                    "nombre",
+                    "caloriasHora"
+                ]
             },
             "DeporteInput": {
                 "type": "object",
                 "properties": {
                     "nombre": {
-                        "type": "string"
+                        "type": "string",
+                        "example": "Baloncesto"
                     },
-                    "intensidad": {
-                        "type": "string"
-                    },
-                    "equipoRequerido": {
-                        "type": "boolean"
+                    "caloriasHora": {
+                        "type": "number",
+                        "example": 650
                     }
                 },
                 "required": [
-                    "nombre"
+                    "nombre",
+                    "caloriasHora"
+                ]
+            },
+            "MessageResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "message"
                 ]
             }
+        }
+    },
+    "paths": {
+        "/api/register": {
+            "post": {
+                "summary": "Registrar nuevo usuario en el sistema",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario registrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
-        "responses": {
-            "BadRequest": {
-                "description": "Petición incorrecta"
+        "/api/login": {
+            "post": {
+                "summary": "Iniciar sesión y obtener tokens",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/LoginResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/MessageResponse"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/refresh": {
+            "post": {
+                "summary": "Renovar token de acceso",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RefreshRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Nuevo token generado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "summary": "Cerrar sesión activa",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sesión cerrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/deportes": {
+            "get": {
+                "summary": "Obtener catálogo de deportes",
+                "tags": [
+                    "Deportes"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de deportes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Deporte"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             },
-            "Forbidden": {
-                "description": "Acceso denegado o token inválido"
+            "post": {
+                "summary": "Registrar un nuevo deporte",
+                "tags": [
+                    "Deportes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeporteInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Deporte creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Deporte"
+                                            }
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/MessageResponse"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/deportes/{id}": {
+            "get": {
+                "summary": "Buscar deporte por ID",
+                "tags": [
+                    "Deportes"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deporte encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/Deporte"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/MessageResponse"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
             },
-            "TooMany": {
-                "description": "Límite de peticiones alcanzado"
+            "put": {
+                "summary": "Modificar datos de un deporte",
+                "tags": [
+                    "Deportes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 0
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeporteInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Deporte actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Deporte"
+                                            }
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/MessageResponse"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Eliminar un deporte",
+                "tags": [
+                    "Deportes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deporte eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Deporte"
+                                            }
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/MessageResponse"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
