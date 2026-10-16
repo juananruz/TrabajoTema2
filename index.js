@@ -4,10 +4,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "./openapi.json" with { type: "json" };
+import fs from "fs";
 
-const SECRET_KEY = "secreto";
-const REFRESH_SECRET_KEY = "refresh_secreto";
+const swaggerDocument = JSON.parse(fs.readFileSync(new URL("./openapi.json", import.meta.url)));
+
+const SECRET_KEY = process.env.JWT_SECRET || "secreto";
+const REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET || "refresh_secreto";
 const app = express();
 
 app.use(express.json());
@@ -160,7 +162,7 @@ app.post('/api/deportes', verifyToken, async (request, response) => {
 
         const { nombre, caloriasHora } = request.body;
         await Deporte.create({ id: sig, nombre, caloriasHora });
-        
+
         const deportes = await Deporte.find({}, { _id: 0, __v: 0 });
         return response.json(deportes);
     } catch (error) {
@@ -208,6 +210,7 @@ app.delete('/api/deportes/:id', verifyToken, async (request, response) => {
     }
 });
 
-app.listen(3000);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
 
 export default app;
